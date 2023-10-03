@@ -1,4 +1,4 @@
-// 변수 선언
+// 전역변수 선언
 const blocks = {
   I: [
     [
@@ -191,21 +191,21 @@ let nextBlock = {
 };
 let currentBlock, gameTimeInterval, downInterval, levelInterval, level;
 
-// 게임 시작 
+// 게임 시작
 gameStart();
-
 function gameStart() {
   currentBlock = Object.assign({}, nextBlock);
 
-  let startTime = new Date();
+  // 게임 시간 초기화 및 설정
+  document.getElementById("time").innerText = "0 sec";
+  let startTime = performance.now();
   clearInterval(gameTimeInterval);
   gameTimeInterval = setInterval(() => {
-    let endTime = new Date();
-    let gameTimeSecond = endTime.getSeconds() - startTime.getSeconds();
-    let gameTimeMinute = endTime.getMinutes() - startTime.getMinutes();
-    let gameTimeHour = endTime.getHours() - startTime.getHours();
-    gameTimeSecond = gameTimeSecond >= 0 ? gameTimeSecond : 60 + gameTimeSecond;
-    gameTimeMinute = gameTimeMinute >= 0 ? gameTimeMinute : 60 + gameTimeMinute;
+    let endTime = performance.now();
+    let gameTime = endTime - startTime;
+    let gameTimeSecond = Math.floor(gameTime / 1000) % 60;
+    let gameTimeMinute = Math.floor(gameTime / 1000 / 60) % 60;
+    let gameTimeHour = Math.floor(gameTime / 1000 / 60 / 60);
 
     let time = document.getElementById("time");
     text = "";
@@ -219,11 +219,7 @@ function gameStart() {
     time.innerText = text;
   }, 1000);
 
-  clearInterval(downInterval);
-  downInterval = setInterval(() => {
-    moveBlock("y", 1);
-  }, 1000);
-  
+  // 레벨 초기화 및 설정
   level = 1;
   document.getElementById("level").innerText = level;
   clearInterval(levelInterval);
@@ -234,20 +230,29 @@ function gameStart() {
     }
   }, 30000);
 
+  // 점수 초기화
   document.getElementById("score").innerText = 0;
 
+  // 블럭 인터벌 초기화
+  clearInterval(downInterval);
+  downInterval = setInterval(() => {
+    moveBlock("y", 1);
+  }, 1000);
+
+  // 엘리먼트, 이벤트 초기화
   generateGameTbody();
   renderBlock();
   nextBlock.shape = makeNextBlock();
-
   document.addEventListener("keydown", keyDownEvent);
   document.querySelector(".restart").blur();
 
+  // game over 숨기기
   const endAlert = document.querySelector(".game-end");
   endAlert.style.color = "rgba(255, 0, 0, 0)";
   endAlert.style.backgroundColor = "rgba(0, 0, 0, 0)";
 }
 
+// 키입력 케이스 설정
 function keyDownEvent(e) {
   switch (e.key) {
     case "ArrowRight":
@@ -270,6 +275,7 @@ function keyDownEvent(e) {
   }
 }
 
+// 게임 레벨(속도) 증가
 function increaseLevel() {
   level += 1;
   if (level === 10) {
@@ -283,6 +289,7 @@ function increaseLevel() {
   }, 1000 - 70 * level);
 }
 
+// 게임판 생성
 function generateGameTbody() {
   let tbody = "";
   for (let i = 0; i < 20; i++) {
@@ -296,6 +303,7 @@ function generateGameTbody() {
   document.querySelector(".game-tbody").innerHTML = tbody;
 }
 
+// 다음 블럭 표시판 생성
 function generateNextBlockTbody() {
   let tbody = "";
   for (let i = 0; i < 4; i++) {
@@ -309,6 +317,7 @@ function generateNextBlockTbody() {
   document.querySelector(".next-block-tbody").innerHTML = tbody;
 }
 
+// 다음 블럭 shape 랜덤 생성
 function makeNextBlock() {
   const blockKeyArray = Object.keys(blocks);
   const randomIndex = Math.floor(Math.random() * blockKeyArray.length);
@@ -317,6 +326,7 @@ function makeNextBlock() {
   return shape;
 }
 
+// 다음 블럭 표시
 function renderNextBlock(shape) {
   generateNextBlockTbody();
 
@@ -326,6 +336,7 @@ function renderNextBlock(shape) {
   });
 }
 
+// 현재 블럭 표시
 function renderBlock() {
   const { x, y, shape, direction } = currentBlock;
 
@@ -348,6 +359,7 @@ function renderBlock() {
   });
 }
 
+// 현재 블럭 이동(← → ↓)
 function moveBlock(where, amount) {
   currentBlock[where] += amount;
   if (checkMovingBlock(where)) {
@@ -358,6 +370,7 @@ function moveBlock(where, amount) {
   }
 }
 
+// 현재 블럭 회전(↑)
 function rotateBlock() {
   currentBlock.direction === 3 ? (currentBlock.direction = 0) : (currentBlock.direction += 1);
   if (checkRotatingBlock()) {
@@ -368,6 +381,7 @@ function rotateBlock() {
   }
 }
 
+// 현재 블럭 드롭(spacebar)
 function dropBlock() {
   clearInterval(downInterval);
   downInterval = setInterval(() => {
@@ -375,6 +389,7 @@ function dropBlock() {
   }, 2);
 }
 
+// 이동 불가능한 블럭 고정
 function fixBlock() {
   clearInterval(downInterval);
   downInterval = setInterval(() => {
@@ -386,13 +401,14 @@ function fixBlock() {
     block.classList.add("fix");
   });
 
-  breakBLock();
+  breakBlock();
 
   currentBlock = Object.assign({}, nextBlock);
   nextBlock.shape = makeNextBlock();
 }
 
-function breakBLock() {
+// 완성 라인 파괴
+function breakBlock() {
   let tbody = document.querySelector(".game-tbody");
   let score = document.getElementById("score");
   tbody.childNodes.forEach((tr) => {
@@ -411,6 +427,7 @@ function breakBLock() {
   });
 }
 
+// 현재 블럭 이동 유효성 검사
 function checkMovingBlock(where = "") {
   const { x, y, shape, direction } = currentBlock;
   let isIn = true;
@@ -442,6 +459,7 @@ function checkMovingBlock(where = "") {
   return isIn;
 }
 
+// 현재 블럭 회전 유효성 검사
 function checkRotatingBlock() {
   const { x, y, shape, direction } = currentBlock;
   let isIn = true;
@@ -465,6 +483,7 @@ function checkRotatingBlock() {
   return isIn;
 }
 
+// 게임 종료 검사
 function checkGameEnd() {
   const { x, y, shape, direction } = currentBlock;
   let isEnd = false;
@@ -483,6 +502,7 @@ function checkGameEnd() {
   return isEnd;
 }
 
+// 게임 종료
 function endGame() {
   clearInterval(downInterval);
   clearInterval(gameTimeInterval);

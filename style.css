@@ -8,14 +8,17 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: white;
+  background-color: rgb(253, 165, 165);
 }
 
 .container {
+  width: 100%;
+  margin: 100px;
+  padding: 20px;
+  border-radius: 12px;
   display: flex;
   justify-content: center;
-  background-color: transparent;
-  margin: 3em;
+  background-color: white;
 }
 
 .game-container {
@@ -43,13 +46,11 @@ body {
 
 .game-tbody {
   margin: 0 auto;
-  outline: 2px solid white;
   background-color: rgba(134, 134, 134, 0.5);
 }
 
 .next-block-tbody {
   margin: 0 auto;
-  outline: 2px solid white;
   background-color: rgba(255, 255, 255, 0.5);
 }
 
@@ -67,6 +68,7 @@ body {
 }
 
 .info-container {
+  width: 250px; 
   display: flex;
   flex-direction: column;
   justify-content: space-between;
